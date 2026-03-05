@@ -122,18 +122,76 @@ const displayLesson = lessons => {
 
 loadLessons();
 
-document.getElementById('btn-search').addEventListener('click', () => {
-  removeActive();
+// document.getElementById('btn-search').addEventListener('click', () => {
+//   removeActive();
 
-  const input = document.getElementById('input-search');
+//   const input = document.getElementById('input-search');
+//   const searchValue = input.value.trim().toLowerCase();
+//   console.log(searchValue);
+
+//   fetch('https://openapi.programming-hero.com/api/words/all')
+//     .then(res => res.json())
+//     .then(data => {
+//       const allWords = data.data;
+//       console.log(allWords);
+//       const filterWords = allWords.filter(word =>
+//         word.word.toLowerCase().includes(searchValue),
+//       );
+//       displayLevelWord(filterWords);
+//     });
+// });
+
+const input = document.getElementById('input-search');
+const btnSearch = document.getElementById('btn-search');
+
+const performSearch = () => {
+  removeActive();
   const searchValue = input.value.trim().toLowerCase();
-  console.log(searchValue);
+
+  if (searchValue.length === 0) {
+    return;
+  }
 
   fetch('https://openapi.programming-hero.com/api/words/all')
     .then(res => res.json())
     .then(data => {
       const allWords = data.data;
-      console.log(allWords);
+      const filterWords = allWords.filter(word =>
+        word.word.toLowerCase().includes(searchValue),
+      );
+      displayLevelWord(filterWords);
+    });
+};
+
+// Button click
+btnSearch.addEventListener('click', performSearch);
+
+// Enter key
+input.addEventListener('keypress', e => {
+  if (e.key === 'Enter') {
+    performSearch();
+  }
+});
+
+// Live Search
+input.addEventListener('input', () => {
+  const searchValue = input.value.trim().toLowerCase();
+
+  if (searchValue.length === 0) {
+    removeActive();
+    document.getElementById('word-container').innerHTML = `
+      <div class="text-center col-span-full py-10">
+        <p class="text-2xl text-black-500 font-medium">🔍 Search for words to get started</p>
+        <p class="text-gray-400 mt-2 text-xl">Type in the search box above or select a lesson above</p>
+      </div>
+    `;
+    return;
+  }
+
+  fetch('https://openapi.programming-hero.com/api/words/all')
+    .then(res => res.json())
+    .then(data => {
+      const allWords = data.data;
       const filterWords = allWords.filter(word =>
         word.word.toLowerCase().includes(searchValue),
       );
