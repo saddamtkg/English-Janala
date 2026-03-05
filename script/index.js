@@ -31,20 +31,33 @@ const removeActive = () => {
   lessonButtons.forEach(btn => btn.classList.remove('active'));
 };
 
-const loadlevelWord = id => {
+const loadlevelWord = async id => {
   manageSpinner(true);
-  const url = `https://openapi.programming-hero.com/api/level/${id}`;
-  fetch(url)
-    .then(res => res.json())
-    .then(data => {
-      removeActive(); // remove all active class
-      const clickBtn = document.getElementById(`lesson-btn-${id}`);
-      //   console.log(clickBtn);
-      clickBtn.classList.add('active'); // add active class
-      displayLevelWord(data.data);
-    });
-};
+  const startTime = Date.now(); // Start time track
 
+  const url = `https://openapi.programming-hero.com/api/level/${id}`;
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    removeActive();
+    const clickBtn = document.getElementById(`lesson-btn-${id}`);
+    clickBtn.classList.add('active');
+
+    // Calculate elapsed time and ensure minimum 500ms delay
+    const elapsed = Date.now() - startTime;
+    const minDelay = 500; // Minimum spinner show time
+    const delay = Math.max(0, minDelay - elapsed);
+
+    setTimeout(() => {
+      displayLevelWord(data.data);
+    }, delay);
+  } catch (error) {
+    console.error('Error loading level words:', error);
+    manageSpinner(false);
+  }
+};
 const loadWordDetail = async id => {
   const url = `https://openapi.programming-hero.com/api/word/${id}`;
   const res = await fetch(url);
@@ -144,7 +157,7 @@ loadLessons();
 const input = document.getElementById('input-search');
 const btnSearch = document.getElementById('btn-search');
 
-const performSearch = () => {
+const performSearch = async () => {
   removeActive();
   const searchValue = input.value.trim().toLowerCase();
 
@@ -152,15 +165,20 @@ const performSearch = () => {
     return;
   }
 
-  fetch('https://openapi.programming-hero.com/api/words/all')
-    .then(res => res.json())
-    .then(data => {
-      const allWords = data.data;
-      const filterWords = allWords.filter(word =>
-        word.word.toLowerCase().includes(searchValue),
-      );
-      displayLevelWord(filterWords);
-    });
+  try {
+    const res = await fetch(
+      'https://openapi.programming-hero.com/api/words/all',
+    );
+    const data = await res.json();
+    const allWords = data.data;
+    const filterWords = allWords.filter(word =>
+      word.word.toLowerCase().includes(searchValue),
+    );
+    displayLevelWord(filterWords);
+  } catch (error) {
+    console.error('Error performing search:', error);
+    // Optional: Show error message to user
+  }
 };
 
 // Button click
